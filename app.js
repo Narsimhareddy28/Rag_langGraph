@@ -6,6 +6,9 @@ const userInput = document.getElementById("user-input");
 const chatWindow = document.getElementById("chat-window");
 const uploadStatus = document.getElementById("upload-status");
 
+// --- CHAT HISTORY ---
+let chatHistory = [];
+
 // --- FILE UPLOAD HANDLER ---
 uploadForm.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -61,11 +64,21 @@ chatForm.addEventListener("submit", async (e) => {
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ input })
+      body: JSON.stringify({ 
+        message: input,
+        history: chatHistory
+      })
     });
 
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+
     const data = await res.json();
-    appendMessage("bot", data.output);
+    appendMessage("bot", data.response);
+    
+    // Update chat history
+    chatHistory = data.messages;
 
   } catch (err) {
     console.error("❌ Chat error:", err);
@@ -80,4 +93,4 @@ function appendMessage(sender, text) {
   div.innerHTML = `<strong>${sender === "user" ? "You" : "Bot"}:</strong> ${text}`;
   chatWindow.appendChild(div);
   chatWindow.scrollTop = chatWindow.scrollHeight;
-}X
+}
